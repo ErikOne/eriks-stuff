@@ -1,0 +1,124 @@
+U-Boot> printenv 
+baudrate=115200
+bootargs=mem=256M console=ttyS0,115200 earlyprintk mtdparts=atmel_nand:8M(bootstrap),192M(updatefs),248M(rootfs),-(datafs) ubi.mtd=1,2048 ubi.mtd=2,2048 ubi.mtd=3,2048 root=ubi1:rootfs rootfstype=ubifs ro ip=192.168.1.235:192.168.1.125:192.168.8.1:255.255.255.0:oc8a5:eth0:off
+bootargs_base=mem=256M console=ttyS0,115200 earlyprintk
+bootargs_jffs2=setenv bootargs ${bootargs_base} ${mtdparts} ${fs_jffs2} ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${eth}:off
+bootargs_mtd=setenv bootargs ${bootargs_base} ${mtdparts} ${fs_ubifs} ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${eth}:off
+bootargs_nfs=setenv bootargs ${bootargs_base} ${mtdparts} ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${eth}:off panic=1 nfsroot=${serverip}:${nfsroot}
+bootargs_ram=setenv bootargs ${bootargs_base} ${mtdparts_ramfs} ${fs_ramfs} ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${eth}:off
+bootargs_ubi=setenv bootargs ${bootargs_base} ${mtdparts} ${fs_ubifs} ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${eth}:off
+bootcmd=run update_mount; if ubifsload ${loadaddr} INDEX; then env import -t ${loadaddr} ${filesize}; run update_check; else if test -n ${update_in_progress}; then env delete update_in_progress; save; fi; fi; run update_umount; run bootcmd_normal; boot;
+bootcmd_mtd=setenv bootcmd 'nand read ${dt_loadaddr} ${dt_addr} ${dt_size}; nand read ${kernel_loadaddr} ${kernel_addr} ${kernel_size}; bootm ${kernel_loadaddr} - ${dt_loadaddr};'
+bootcmd_normal=setenv bootcmd 'nand read ${dt_loadaddr} ${dt_addr} ${dt_size}; nand read ${kernel_loadaddr} ${kernel_addr} ${kernel_size}; if bootm ${kernel_loadaddr} - ${dt_loadaddr}; then echo Booting; else reset; fi'
+bootcmd_ram=setenv bootcmd 'nand read 0x20800000 ${ramfs_addr} ${ramfs_size}; nand read ${dt_loadaddr} ${dt_addr} ${dt_size}; nand read ${kernel_loadaddr} ${kernel_addr} ${kernel_size}; bootm ${kernel_loadaddr} - ${dt_loadaddr};'
+bootdelay=2
+datafs_addr=0x1c000000
+datafs_filename=datafs-oc8.ubi
+datafs_size=0x04000000
+dt_addr=0x00180000
+dt_filename=oc8a5-dtb-3.10.0
+dt_loadaddr=0x21000000
+dt_size=0x00080000
+env_filename=oc8a5-u-boot-env-2013.07.bin
+env_size=0x00040000
+enva_addr=0x000c0000
+envb_addr=0x00100000
+erase_bs=nand erase 0x20000 0x20000
+erase_datafs=nand erase ${datafs_addr} ${datafs_size}
+erase_dt=nand erase ${dt_addr} ${dt_size}
+erase_env=nand erase ${enva_addr} ${env_size};nand erase ${envb_addr} ${env_size}
+erase_fs=nand erase ${fs_addr} ${fs_size}
+erase_kernel=nand erase ${kernel_addr} ${kernel_size}
+erase_pbs=nand erase 0x00000 0x20000
+erase_ramfs=nand erase ${ramfs_addr} ${ramfs_maxsize}
+erase_rwfs=nand erase ${rwfs_addr} ${rwfs_size}
+erase_uboot=nand erase ${uboot_addr} ${uboot_size}
+erase_updatefs=nand erase ${updatefs_addr} ${updatefs_size}
+eth=eth0
+ethact=gmac0
+ethaddr=38:43:4f:10:00:02
+ethprime=gmac0
+fileaddr=20000000
+filesize=200000
+fs_addr=0x0C800000
+fs_filename=myrmica-minimal-oc8.ubi
+fs_jffs2=root=/dev/mtdblock1 rw rootfstype=jffs2
+fs_ramfs=root=/dev/ram0 ro rootfstype=squashfs initrd=0x20800000,${ramfs_size}
+fs_size=0x0f800000
+fs_ubifs=ubi.mtd=1,2048 ubi.mtd=2,2048 ubi.mtd=3,2048 root=ubi1:rootfs rootfstype=ubifs ro
+gatewayip=192.168.8.1
+hostname=oc8a5
+ipaddr=192.168.1.235
+kernel_addr=0x00200000
+kernel_filename=oc8a5-uImage-3.10.0
+kernel_loadaddr=0x22000000
+kernel_size=0x00300000
+load_bs=tftp 0x22000000 oc8a5-bootstrap.bin
+load_datafs=tftp ${loadaddr} ${datafs_filename}
+load_dt=tftp ${loadaddr} ${dt_filename}
+load_env=tftp ${loadaddr} ${env_filename}
+load_fs=tftp ${loadaddr} ${fs_filename}
+load_kernel=tftp ${loadaddr} ${kernel_filename}
+load_pbs=tftp 0x22000000 oc8a5-prebootstrap.bin
+load_ramfs=tftp ${loadaddr} ${ramfs_filename}
+load_rwfs=tftp ${loadaddr} ${fs_filename}
+load_uboot=tftp ${loadaddr} ${uboot_filename}
+load_updatefs=tftp ${loadaddr} ${updatefs_filename}
+loadaddr=0x20000000
+mtddevname=bootstrap
+mtddevnum=0
+mtdids=nand0=atmel_nand
+mtdparts=mtdparts=atmel_nand:8M(bootstrap),192M(updatefs),248M(rootfs),-(datafs)
+mtdparts2=mtdparts=atmel_nand:8M(bootstrap),-(rootfs)
+mtdparts_ramfs=mtdparts=atmel_nand:8M(bootstrap),${ramfs_maxsize}(root-ro),-(rootfs) ubi.mtd=2,2048
+netmask=255.255.255.0
+nfsroot=/home/generic/OpenController/fs/myrmica-fs-1.0
+partition=nand0,0
+ramfs_addr=0x01000000
+ramfs_filename=myrmica-minimal-oc8.squashfs
+ramfs_maxsize=0x03000000
+ramfs_size=0x01000000
+refresh_all=run refresh_uboot; run refresh_kernel; run refresh_dt; run refresh_fs; run refresh_datafs; run refresh_updatefs; run refresh_pbs; run refresh_bs; saveenv;
+refresh_bs=if run load_bs; then run erase_bs; run save_bs; fi
+refresh_datafs=if run load_datafs; then run erase_datafs; run save_datafs; fi
+refresh_dt=if run load_dt; then run erase_dt; run save_dt; fi
+refresh_env=if run load_env; then run erase_env; run save_env; fi
+refresh_fs=if run load_fs; then run erase_fs; run save_fs; fi
+refresh_kernel=if run load_kernel; then run erase_kernel; run save_kernel; fi
+refresh_pbs=if run load_pbs; then run erase_pbs; run save_pbs; fi
+refresh_ramfs=if run load_ramfs; then run erase_ramfs; run save_ramfs; fi
+refresh_rwfs=if run load_rwfs; then run erase_rwfs; run save_rwfs; fi
+refresh_uboot=if run load_uboot; then run erase_uboot; run save_uboot; fi
+refresh_updatefs=if run load_updatefs; then run erase_updatefs; run save_updatefs; fi
+rwfs_addr=0x04000000
+rwfs_size=0x0c000000
+save_base=run erase_pbs; run erase_bs; run erase_uboot; nand write 0x22000000 0x00000 0x20000; nand write 0x22020000 0x20000 0x20000; nand write 0x20040000 ${uboot_addr} ${uboot_size};
+save_bs=nand write 0x22000000 0x20000 ${filesize}
+save_datafs=nand write ${fileaddr} ${datafs_addr} ${filesize}
+save_dt=nand write ${fileaddr} ${dt_addr} ${dt_size}
+save_env=nand write ${fileaddr} ${enva_addr} ${env_size};nand write ${fileaddr} ${envb_addr} ${env_size}
+save_fs=nand write ${fileaddr} ${fs_addr} ${filesize}
+save_kernel=nand write ${fileaddr} ${kernel_addr} ${kernel_size}
+save_pbs=nand write 0x22000000 0x00000 ${filesize}
+save_ramfs=nand write ${fileaddr} ${ramfs_addr} ${filesize}; setenv ramfs_size ${filesize}
+save_rwfs=nand write ${fileaddr} ${rwfs_addr} ${filesize}
+save_uboot=nand write ${fileaddr} ${uboot_addr} ${uboot_size}
+save_updatefs=nand write ${fileaddr} ${updatefs_addr} ${filesize}
+serverip=192.168.1.125
+stderr=serial
+stdin=serial
+stdout=serial
+uboot_addr=0x00040000
+uboot_filename=oc8a5-u-boot-2013.07.bin
+uboot_size=0x00080000
+update_check=if test -n ${update_in_progress}; then setenv update_current ${update_fallback}; run update_load_cmd; run update_cmd; env delete update_in_progress; else setenv update_in_progress 1; save; run update_load_cmd; run update_cmd; fi
+update_load_cmd=ubifsload ${loadaddr} ${update_current}/INSTALL; env import -t ${loadaddr} ${filesize};
+update_mount=ubi part updatefs 2048; ubifsmount ubi0:updatefs;
+update_umount=ubifsumount;
+updatefs_addr=0x00800000
+updatefs_filename=updatefs-oc8.ubi
+updatefs_size=0x0c000000
+
+Environment size: 7191/131067 bytes
+U-Boot> 
+
